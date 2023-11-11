@@ -73,7 +73,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--log_dir')
     # Put custom arguments 
-    parser.add_argument('-n', '--num_epochs', type=int, default=10)
+    parser.add_argument('-n', '--num_epochs', type=int, default=120)
     parser.add_argument('-lr', '--learning_rate', type=float, default=1e-3)
     parser.add_argument('-c', '--continue_training', action='store_true')
     parser.add_argument('-t', '--transform',
