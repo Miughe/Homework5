@@ -17,9 +17,11 @@ class Encoder(nn.Module):
     def __init__(self):
         super(Encoder, self).__init__()
         self.layers = nn.ModuleList([
-            nn.Conv2d(3, 16, kernel_size=3, stride=2, padding=1),  # Output: (B, 16, 48, 64)
-            nn.Conv2d(16, 32, kernel_size=3, stride=2, padding=1),  # Output: (B, 32, 24, 32)
-            nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1)   # Output: (B, 64, 12, 16)
+            nn.Conv2d(3, 16, kernel_size=3, stride=2, padding=1),    # Output: (B, 16, 48, 64)
+            nn.Conv2d(16, 32, kernel_size=3, stride=2, padding=1),   # Output: (B, 32, 24, 32)
+            nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1),   # Output: (B, 64, 12, 16)
+            nn.Conv2d(64, 128, kernel_size=3, stride=2, padding=1),  # Output: (B, 128, 6, 8)
+            nn.Conv2d(128, 256, kernel_size=3, stride=2, padding=1), # Output: (B, 256, 3, 4)
         ])
 
     def forward(self, x):
@@ -30,16 +32,22 @@ class Encoder(nn.Module):
 class Decoder(nn.Module):
     def __init__(self):
         super(Decoder, self).__init__()
-        self.conv1 = nn.ConvTranspose2d(64, 32, kernel_size=4, stride=2, padding=1)  # Output: (B, 32, 24, 32)
-        self.batch_norm1 = nn.BatchNorm2d(32)
-        self.conv2 = nn.ConvTranspose2d(32, 16, kernel_size=4, stride=2, padding=1)  # Output: (B, 16, 48, 64)
-        self.batch_norm2 = nn.BatchNorm2d(16)
-        self.conv3 = nn.ConvTranspose2d(16, 1, kernel_size=4, stride=2, padding=1)   # Output: (B, 1, 96, 128)
+        self.conv1 = nn.ConvTranspose2d(256, 128, kernel_size=4, stride=2, padding=1)  # Output: (B, 128, 6, 8)
+        self.batch_norm1 = nn.BatchNorm2d(128)
+        self.conv2 = nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2, padding=1)  # Output: (B, 64, 12, 16)
+        self.batch_norm2 = nn.BatchNorm2d(64)
+        self.conv3 = nn.ConvTranspose2d(64, 32, kernel_size=4, stride=2, padding=1)   # Output: (B, 32, 24, 32)
+        self.batch_norm3 = nn.BatchNorm2d(32)
+        self.conv4 = nn.ConvTranspose2d(32, 16, kernel_size=4, stride=2, padding=1)   # Output: (B, 16, 48, 64)
+        self.batch_norm4 = nn.BatchNorm2d(16)
+        self.conv5 = nn.ConvTranspose2d(16, 1, kernel_size=4, stride=2, padding=1)    # Output: (B, 1, 96, 128)
 
     def forward(self, x):
         x = F.relu(self.batch_norm1(self.conv1(x)))
         x = F.relu(self.batch_norm2(self.conv2(x)))
-        x = torch.sigmoid(self.conv3(x))  # Output heatmap of size (B, 1, 96, 128)
+        x = F.relu(self.batch_norm3(self.conv3(x)))
+        x = F.relu(self.batch_norm4(self.conv4(x)))
+        x = torch.sigmoid(self.conv5(x))  # Output heatmap of size (B, 1, 96, 128)
         return x
 
 class Planner(torch.nn.Module):
